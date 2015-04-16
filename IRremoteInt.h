@@ -260,17 +260,27 @@ extern volatile irparams_t irparams;
 #define TIMER_RESET
 #define TIMER_ENABLE_PWM     (TCCR2A |= _BV(COM2B1))
 #define TIMER_DISABLE_PWM    (TCCR2A &= ~(_BV(COM2B1)))
+//creating new outputs to support pin 9 and 9 on timer 1(using timer 1) added by khaireddine hlali
+#define TIMER_ENABLE_PWM3     (TCCR1A |= _BV(COM1B1)) //activating  the Output Compare pin (OC1B) on PWM 
+#define TIMER_DISABLE_PWM3    (TCCR1A &= ~(_BV(COM1B1)))//deactivating PWM
+#define TIMER_ENABLE_PWM4     (TCCR1A |= _BV(COM1A1)) //activating  the Output Compare pin (OC1A) on PWM
+#define TIMER_DISABLE_PWM4    (TCCR1A &= ~(_BV(COM1A1)))//deactivating PWM
 #define TIMER_ENABLE_INTR    (TIMSK2 = _BV(OCIE2A))
-#define TIMER_DISABLE_INTR   (TIMSK2 = 0)
+#define TIMER_DISABLE_INTR   ((TIMSK2 = 0)&&(TIMSK1 = 0)&&(TIMSK0 = 0))
 #define TIMER_INTR_NAME      TIMER2_COMPA_vect
 #define TIMER_CONFIG_KHZ(val) ({ \
   const uint8_t pwmval = SYSCLOCK / 2000 / (val); \
   TCCR2A = _BV(WGM20); \
   TCCR2B = _BV(WGM22) | _BV(CS20); \
-  OCR2A = pwmval; \
+  OCR2A = pwmval ; \
   OCR2B = pwmval / 3; \
+  TCCR1A = _BV(WGM11); \
+  TCCR1B = _BV(WGM13) | _BV(CS10); \
+  ICR1 = pwmval ; \
+  OCR1A = pwmval / 3; \
+  OCR1B = pwmval / 3; \
 })
-#define TIMER_COUNT_TOP      (SYSCLOCK * USECPERTICK / 1000000)
+#define TIMER_COUNT_TOP   (SYSCLOCK * USECPERTICK / 1000000)
 #if (TIMER_COUNT_TOP < 256)
 #define TIMER_CONFIG_NORMAL() ({ \
   TCCR2A = _BV(WGM21); \
@@ -284,6 +294,11 @@ extern volatile irparams_t irparams;
   TCCR2B = _BV(CS21); \
   OCR2A = TIMER_COUNT_TOP / 8; \
   TCNT2 = 0; \
+  TCCR1A = 0; \
+  TCCR1B = _BV(WGM12) | _BV(CS10); \
+  OCR1A = SYSCLOCK * USECPERTICK / 1000000; \
+  OCR1B = SYSCLOCK * USECPERTICK / 1000000; \
+  TCNT1 = 0; \
 })
 #endif
 #if defined(CORE_OC2B_PIN)
@@ -293,7 +308,9 @@ extern volatile irparams_t irparams;
 #elif defined(__AVR_ATmega644P__) || defined(__AVR_ATmega644__)
 #define TIMER_PWM_PIN        14 /* Sanguino */
 #else
-#define TIMER_PWM_PIN        3  /* Arduino Duemilanove, Diecimila, LilyPad, etc */
+#define TIMER_PWM_PIN        3   /* Arduino Duemilanove, Diecimila, LilyPad, etc */
+#define TIMER_PWM_PIN3        9  //added to support output on pin 9
+#define TIMER_PWM_PIN4        10 //added to support output on pin 10
 #endif
 
 
