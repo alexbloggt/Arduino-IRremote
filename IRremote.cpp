@@ -1445,7 +1445,7 @@ void IRsend::sendAiwaRCT501(int code) {
   mark(AIWA_RC_T501_BIT_MARK);
   space(0);
 }
-
+#endif
 /*
 duplicated functions with multiple classes to support multiple pins (added by khaireddine hlali)
  
@@ -1889,5 +1889,3 @@ void IRsend2::enableIROut2(int khz) {
   digitalWrite(TIMER_PWM_PIN3, LOW);
   TIMER_CONFIG_KHZ(khz);
 }
-
-#endif
