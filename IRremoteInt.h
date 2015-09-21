@@ -43,9 +43,9 @@
 
 // Teensy 2.0
 #elif defined(__AVR_ATmega32U4__)
-  //#define IR_USE_TIMER1   // tx = pin 14
+  #define IR_USE_TIMER1   // pins 9,13,5
   //#define IR_USE_TIMER3   // tx = pin 9
-  #define IR_USE_TIMER4_HS  // tx = pin 10
+  //#define IR_USE_TIMER4_HS  // tx = pin 10
 
 // Teensy 3.0
 #elif defined(__MK20DX128__)
@@ -319,6 +319,12 @@ extern volatile irparams_t irparams;
 #define TIMER_RESET
 #define TIMER_ENABLE_PWM     (TCCR1A |= _BV(COM1A1))
 #define TIMER_DISABLE_PWM    (TCCR1A &= ~(_BV(COM1A1)))
+
+#define TIMER_ENABLE_PWM3     (TCCR4A |= _BV(COM4A1))
+#define TIMER_DISABLE_PWM3    (TCCR4A &= ~(_BV(COM4A1)))
+
+#define TIMER_ENABLE_PWM4     (TCCR3A |= _BV(COM3A1))
+#define TIMER_DISABLE_PWM4    (TCCR3A &= ~(_BV(COM3A1)))
 #if defined(__AVR_ATmega8P__) || defined(__AVR_ATmega8__)
   #define TIMER_ENABLE_INTR    (TIMSK = _BV(OCIE1A))
   #define TIMER_DISABLE_INTR   (TIMSK = 0)
@@ -333,12 +339,40 @@ extern volatile irparams_t irparams;
   TCCR1B = _BV(WGM13) | _BV(CS10); \
   ICR1 = pwmval; \
   OCR1A = pwmval / 3; \
+  TCCR3A = _BV(WGM31); \
+  TCCR3B = _BV(WGM33) | _BV(CS30); \
+  ICR3 = pwmval; \
+  OCR3A = pwmval / 3; \
+  TCCR4A = (1<<PWM4A); \
+  TCCR4B = _BV(CS40); \
+  TCCR4C = 0; \
+  TCCR4D = (1<<WGM40); \
+  TCCR4E = 0; \
+  TC4H = pwmval >> 8; \
+  OCR4C = pwmval; \
+  TC4H = (pwmval / 3) >> 8; \
+  OCR4A = (pwmval / 3) & 255; \
 })
 #define TIMER_CONFIG_NORMAL() ({ \
   TCCR1A = 0; \
   TCCR1B = _BV(WGM12) | _BV(CS10); \
   OCR1A = SYSCLOCK * USECPERTICK / 1000000; \
   TCNT1 = 0; \
+  TCCR3A = 0; \
+  TCCR3B = _BV(WGM32) | _BV(CS30); \
+  TCCR1A = _BV(WGM11); \
+  TCCR1B = _BV(WGM13) | _BV(CS10); \
+  OCR3A = SYSCLOCK * USECPERTICK / 1000000; \
+  TCNT3 = 0; \
+  TCCR4A = 0; \
+  TCCR4B = _BV(CS40); \
+  TCCR4C = 0; \
+  TCCR4D = 0; \
+  TCCR4E = 0; \
+  TC4H = (SYSCLOCK * USECPERTICK / 1000000) >> 8; \
+  OCR4C = (SYSCLOCK * USECPERTICK / 1000000) & 255; \
+  TC4H = 0; \
+  TCNT4 = 0; \
 })
 #if defined(CORE_OC1A_PIN)
 #define TIMER_PWM_PIN        CORE_OC1A_PIN  /* Teensy */
@@ -348,6 +382,8 @@ extern volatile irparams_t irparams;
 #define TIMER_PWM_PIN        13 /* Sanguino */
 #else
 #define TIMER_PWM_PIN        9  /* Arduino Duemilanove, Diecimila, LilyPad, etc */
+#define TIMER_PWM_PIN3        13
+#define TIMER_PWM_PIN4        5
 #endif
 
 
